@@ -1,4 +1,5 @@
-import Parser from './tree-sitter.js';
+// Import tree-sitter - it's loaded as a global
+const Parser = TreeSitter;
 import init, { process_chord_progression } from './pkg/chord_processor.js';
 
 let parser = null;
