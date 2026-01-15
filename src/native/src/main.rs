@@ -2,8 +2,6 @@ use chord_processor::{process_ast, AstNode};
 use std::env;
 use tree_sitter::{Parser, Node};
 
-extern "C" { fn tree_sitter_chordprog() -> tree_sitter::Language; }
-
 /// Convert Tree-sitter CST Node to JSON AST
 fn node_to_json(node: Node, source: &str) -> serde_json::Value {
     let kind = node.kind();
@@ -50,7 +48,7 @@ fn main() {
     
     // Parse with Tree-sitter
     let mut parser = Parser::new();
-    let language = unsafe { tree_sitter_chordprog() };
+    let language = tree_sitter_chordprog::language();
     parser.set_language(language).unwrap();
     
     let tree = parser.parse(input, None).unwrap();

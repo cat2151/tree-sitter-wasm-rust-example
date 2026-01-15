@@ -1,4 +1,4 @@
-import Parser from 'web-tree-sitter';
+import Parser from './tree-sitter.js';
 import init, { process_chord_progression } from './pkg/chord_processor.js';
 
 let parser = null;
