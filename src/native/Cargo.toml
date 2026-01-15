@@ -1,0 +1,16 @@
+[package]
+name = "chord-cli"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "chord-cli"
+path = "src/main.rs"
+
+[dependencies]
+chord-processor = { path = "../rust" }
+tree-sitter = "0.20"
+# Note: `tree-sitter-chordprog` is a local path dependency that is .gitignored and
+# must be created/populated manually as described in the project README.
+tree-sitter-chordprog = { path = "../../tree-sitter-chordprog" }
+serde_json = "1.0"
