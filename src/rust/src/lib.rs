@@ -11,31 +11,35 @@ pub enum AstNode {
 }
 
 /// Convert note name to degree in C major scale
-pub fn note_to_degree(note: &str) -> u8 {
+/// Returns None for invalid notes (not in C major scale)
+pub fn note_to_degree(note: &str) -> Option<u8> {
     match note {
-        "C" => 1,
-        "D" => 2,
-        "E" => 3,
-        "F" => 4,
-        "G" => 5,
-        "A" => 6,
-        "B" => 7,
-        _ => 0,
+        "C" => Some(1),
+        "D" => Some(2),
+        "E" => Some(3),
+        "F" => Some(4),
+        "G" => Some(5),
+        "A" => Some(6),
+        "B" => Some(7),
+        _ => None,
     }
 }
 
 /// Process AST and convert notes to degrees
+/// Filters out invalid notes that are not in C major scale
 pub fn process_ast(ast: &AstNode) -> Vec<u8> {
     match ast {
         AstNode::Progression { children } => {
             children.iter()
                 .filter_map(|child| match child {
-                    AstNode::Note { text } => Some(note_to_degree(text)),
+                    AstNode::Note { text } => note_to_degree(text),
                     _ => None,
                 })
                 .collect()
         }
-        AstNode::Note { text } => vec![note_to_degree(text)],
+        AstNode::Note { text } => {
+            note_to_degree(text).into_iter().collect()
+        }
     }
 }
 
@@ -47,7 +51,7 @@ pub fn process_chord_progression(ast_json: &str) -> String {
             serde_json::to_string(&degrees).unwrap_or_else(|_| "[]".to_string())
         }
         Err(e) => {
-            format!("{{\"error\": \"{}\"}}", e)
+            serde_json::json!({ "error": e.to_string() }).to_string()
         }
     }
 }
@@ -58,13 +62,15 @@ mod tests {
 
     #[test]
     fn test_note_to_degree() {
-        assert_eq!(note_to_degree("C"), 1);
-        assert_eq!(note_to_degree("D"), 2);
-        assert_eq!(note_to_degree("E"), 3);
-        assert_eq!(note_to_degree("F"), 4);
-        assert_eq!(note_to_degree("G"), 5);
-        assert_eq!(note_to_degree("A"), 6);
-        assert_eq!(note_to_degree("B"), 7);
+        assert_eq!(note_to_degree("C"), Some(1));
+        assert_eq!(note_to_degree("D"), Some(2));
+        assert_eq!(note_to_degree("E"), Some(3));
+        assert_eq!(note_to_degree("F"), Some(4));
+        assert_eq!(note_to_degree("G"), Some(5));
+        assert_eq!(note_to_degree("A"), Some(6));
+        assert_eq!(note_to_degree("B"), Some(7));
+        assert_eq!(note_to_degree("X"), None);
+        assert_eq!(note_to_degree(""), None);
     }
 
     #[test]

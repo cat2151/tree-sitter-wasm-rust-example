@@ -23,7 +23,13 @@ fn node_to_json(node: Node, source: &str) -> serde_json::Value {
             })
         }
         "note" => {
-            let text = node.utf8_text(source.as_bytes()).unwrap_or("");
+            let text = match node.utf8_text(source.as_bytes()) {
+                Ok(t) => t,
+                Err(e) => {
+                    eprintln!("Warning: UTF-8 decoding error for 'note' node: {}", e);
+                    ""
+                }
+            };
             serde_json::json!({
                 "type": "note",
                 "text": text
@@ -49,16 +55,21 @@ fn main() {
     // Parse with Tree-sitter
     let mut parser = Parser::new();
     let language = tree_sitter_chordprog::language();
-    parser.set_language(language).unwrap();
+    parser
+        .set_language(language)
+        .expect("Failed to set Tree-sitter language for chord progression parser");
     
-    let tree = parser.parse(input, None).unwrap();
+    let tree = parser
+        .parse(input, None)
+        .expect("Failed to parse input chord progression with Tree-sitter");
     let root = tree.root_node();
     
     // Convert CST to JSON AST
     let ast_json = node_to_json(root, input);
     
     // Deserialize JSON AST to Rust AST
-    let ast: AstNode = serde_json::from_value(ast_json).unwrap();
+    let ast: AstNode = serde_json::from_value(ast_json)
+        .expect("Failed to deserialize chord progression AST from JSON");
     
     // Process AST
     let degrees = process_ast(&ast);

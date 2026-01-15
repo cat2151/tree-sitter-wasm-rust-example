@@ -74,7 +74,13 @@ function parseChordProgression(input) {
     // Process with Rust WASM
     const result = process_chord_progression(JSON.stringify(jsonAst));
     
-    return JSON.parse(result);
+    // Check for errors in the result
+    const parsed = JSON.parse(result);
+    if (parsed && typeof parsed === 'object' && 'error' in parsed) {
+        throw new Error(parsed.error || 'Chord progression processing error');
+    }
+    
+    return parsed;
 }
 
 /**
@@ -89,16 +95,25 @@ function setupUI() {
         const input = inputEl.value.trim();
         
         if (!input) {
-            outputEl.innerHTML = '<span class="error">Please enter a chord progression</span>';
+            outputEl.textContent = 'Please enter a chord progression';
+            outputEl.className = 'error';
             return;
         }
         
         try {
             const result = parseChordProgression(input);
             console.log(result);
-            outputEl.innerHTML = `<span class="success">Result: ${JSON.stringify(result)}</span>`;
+            outputEl.innerHTML = '<span class="success"></span>';
+            const successSpan = outputEl.querySelector('.success');
+            if (successSpan) {
+                successSpan.textContent = `Result: ${JSON.stringify(result)}`;
+            }
         } catch (error) {
-            outputEl.innerHTML = `<span class="error">Error: ${error.message}</span>`;
+            outputEl.innerHTML = '<span class="error"></span>';
+            const errorSpan = outputEl.querySelector('.error');
+            if (errorSpan) {
+                errorSpan.textContent = `Error: ${error.message}`;
+            }
             console.error(error);
         }
     });
